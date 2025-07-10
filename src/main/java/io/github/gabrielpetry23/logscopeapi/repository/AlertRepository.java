@@ -1,4 +1,7 @@
 package io.github.gabrielpetry23.logscopeapi.repository;
 
-public class AlertRepository {
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface AlertRepository {
 }

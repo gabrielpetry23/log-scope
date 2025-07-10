@@ -1,4 +1,7 @@
 package io.github.gabrielpetry23.logscopeapi.repository;
 
-public class RuleRepository {
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface RuleRepository {
 }

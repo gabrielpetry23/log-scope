@@ -18,3 +18,4 @@ server:
 
 jwt:
   secret: 645ce38865e11b509c8fa7cd4c1856a8
+  expiration: 86400000
