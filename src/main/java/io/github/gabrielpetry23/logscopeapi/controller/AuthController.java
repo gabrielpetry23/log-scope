@@ -34,7 +34,6 @@ public class AuthController {
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // Obtenha o CustomUserDetails do objeto Authentication
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
         String jwt = jwtUtils.generateToken(userDetails);

@@ -4,7 +4,13 @@ import io.github.gabrielpetry23.logscopeapi.model.Client;
 import io.github.gabrielpetry23.logscopeapi.model.User;
 import io.github.gabrielpetry23.logscopeapi.model.enums.Role;
 import io.github.gabrielpetry23.logscopeapi.repository.ClientRepository;
+import io.github.gabrielpetry23.logscopeapi.security.CustomUserDetails;
+import io.github.gabrielpetry23.logscopeapi.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +26,20 @@ public class ClientService {
     private final ClientRepository clientRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserService userService;
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtils jwtUtils;
+
+    public String authenticateAndGenerateJwt(String username, String password) {
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(username, password));
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            return jwtUtils.generateToken(userDetails);
+        } catch (BadCredentialsException e) {
+            System.err.println("Error authenticating user: " + e.getMessage());
+            return null;
+        }
+    }
 
     public Client registerNewClient(String companyName, String contactEmail, String initialAdminPassword) {
         Client client = new Client();

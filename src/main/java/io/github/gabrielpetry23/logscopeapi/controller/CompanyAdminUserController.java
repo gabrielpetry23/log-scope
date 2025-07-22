@@ -1,6 +1,7 @@
 package io.github.gabrielpetry23.logscopeapi.controller;
 
 import io.github.gabrielpetry23.logscopeapi.config.TenantContext;
+import io.github.gabrielpetry23.logscopeapi.controller.mapper.UserMapper;
 import io.github.gabrielpetry23.logscopeapi.dto.UserCreationRequestDTO;
 import io.github.gabrielpetry23.logscopeapi.dto.UserResponseDTO;
 import io.github.gabrielpetry23.logscopeapi.model.User;
@@ -21,29 +22,15 @@ import java.util.stream.Collectors;
 public class CompanyAdminUserController {
 
     private final UserService userService;
+    private final UserMapper userMapper;
 
     @PostMapping
     @PreAuthorize("hasRole('COMPANY_ADMIN')")
     public ResponseEntity<UserResponseDTO> createUserForCompany(@Valid @RequestBody UserCreationRequestDTO request) {
-        String currentClientId = TenantContext.getTenantId();
-        if (currentClientId == null || currentClientId.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
-        }
 
-        User newUser = new User();
-        newUser.setUsername(request.username());
-        newUser.setPassword(request.password());
-        newUser.setRoles(request.roles());
-        newUser.setClientId(currentClientId);
+        User newUser = userService.createUserForCompany(request);
 
-        User savedUser = userService.save(newUser);
-
-        UserResponseDTO responseDTO = new UserResponseDTO(
-                savedUser.getId(),
-                savedUser.getUsername(),
-                savedUser.getRoles(),
-                savedUser.getClientId()
-        );
+        UserResponseDTO responseDTO = userMapper.toDTO(newUser);
 
         return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
     }
@@ -51,19 +38,10 @@ public class CompanyAdminUserController {
     @GetMapping
     @PreAuthorize("hasRole('COMPANY_ADMIN')")
     public ResponseEntity<List<UserResponseDTO>> getUsersByCompany() {
-        String currentClientId = TenantContext.getTenantId();
-        if (currentClientId == null || currentClientId.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
-        }
-        List<User> users = userService.findByClientId(currentClientId);
+        List<User> users = userService.getUsersByCompany();
 
         List<UserResponseDTO> responseDTOs = users.stream()
-                .map(user -> new UserResponseDTO(
-                        user.getId(),
-                        user.getUsername(),
-                        user.getRoles(),
-                        user.getClientId()
-                ))
+                .map(userMapper::toDTO)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(responseDTOs);
