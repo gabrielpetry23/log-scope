@@ -5,7 +5,7 @@ import java.util.List;
 
 public record JwtResponseDTO(
         String token,
-        String type, // Não precisa de = "Bearer", pode ser injetado no construtor se preferir
+        String type,
         String username,
         List<String> roles,
         String clientId

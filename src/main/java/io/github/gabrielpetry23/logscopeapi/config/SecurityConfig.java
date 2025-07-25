@@ -28,6 +28,7 @@ public class SecurityConfig {
     private final CustomUserDetailsService customUserDetailsService;
     private final JwtUtils jwtUtils;
     private final TenantFilter tenantFilter;
+    private final CorsConfig corsConfig;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -45,14 +46,15 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)
+
+        http.cors(cors -> cors.configurationSource(corsConfig.corsConfigurationSource())).csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.POST, "/oauth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/oauth/token").permitAll()
                         .requestMatchers(HttpMethod.POST, "/oauth/register-client").hasRole("GLOBAL_ADMIN")
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/logs").hasAnyRole("COMPANY_SYSTEM", "COMPANY_ADMIN", "GLOBAL_ADMIN")
+                        .requestMatchers("/api/v1/logs").hasAnyRole("COMPANY_SYSTEM", "COMPANY_ADMIN", "GLOBAL_ADMIN")
                         .requestMatchers("/api/v1/rules/**").hasAnyRole("COMPANY_ADMIN", "GLOBAL_ADMIN")
                         .requestMatchers("/api/v1/alerts/**").hasAnyRole("COMPANY_ADMIN", "COMPANY_VIEWER", "GLOBAL_ADMIN", "GLOBAL_SUPPORT")
                         .requestMatchers("/api/v1/admin/users/**").hasAnyRole("COMPANY_ADMIN", "GLOBAL_ADMIN")

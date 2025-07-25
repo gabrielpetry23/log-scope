@@ -1,4 +1,6 @@
-version: '3.8'
+# Remova a linha 'version: 3.8' - o Docker Compose moderno não precisa dela
+# e ela pode gerar um aviso.
+
 services:
   mongodb:
     image: mongo
@@ -6,7 +8,7 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - mongo_data:/data/db
+      - mongo_data:/data/db # Referencia o volume nomeado aqui
 
   mongo-express:
     image: mongo-express
@@ -47,6 +49,10 @@ services:
     environment:
       SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/logscope
       SPRING_PROFILES_ACTIVE: docker
+      JWT_SECRET: 645ce38865e11b509c8fa7cd4c1856a8
 
+# --- Definição dos volumes nomeados aqui, no mesmo nível de 'services' ---
 volumes:
   mongo_data:
+  # Você pode adicionar opções aqui se precisar, como 'driver: local'
+  # mas para a maioria dos casos, apenas o nome já é suficiente.
