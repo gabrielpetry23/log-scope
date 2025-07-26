@@ -1,45 +1,76 @@
-# Remova a linha 'version: 3.8' - o Docker Compose moderno não precisa dela
-# e ela pode gerar um aviso.
+# LogScope API - Complete Environment Setup
 
 services:
+  # MongoDB Database
   mongodb:
-    image: mongo
-    container_name: mongo
+    image: mongo:7-jammy
+    container_name: logscope-mongo
+    restart: unless-stopped
     ports:
       - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: logscope
+      MONGO_INITDB_ROOT_PASSWORD: logscope123
+      MONGO_INITDB_DATABASE: logscope
     volumes:
-      - mongo_data:/data/db # Referencia o volume nomeado aqui
+      - mongo_data:/data/db
+    networks:
+      - logscope-network
 
+  # MongoDB Admin Interface
   mongo-express:
-    image: mongo-express
-    container_name: mongo-express
+    image: mongo-express:1.0.2
+    container_name: logscope-mongo-express
+    restart: unless-stopped
     ports:
       - "8081:8081"
     environment:
       ME_CONFIG_MONGODB_SERVER: mongodb
+      ME_CONFIG_MONGODB_ADMINUSERNAME: logscope
+      ME_CONFIG_MONGODB_ADMINPASSWORD: logscope123
       ME_CONFIG_BASICAUTH_USERNAME: admin
-      ME_CONFIG_BASICAUTH_PASSWORD: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin123
+    depends_on:
+      - mongodb
+    networks:
+      - logscope-network
 
+  # Redis Cache
   redis:
-    image: redis:alpine
-    container_name: redis
+    image: redis:7-alpine
+    container_name: logscope-redis
+    restart: unless-stopped
     ports:
       - "6379:6379"
+    command: redis-server --appendonly yes --requirepass redis123
+    volumes:
+      - redis_data:/data
+    networks:
+      - logscope-network
 
+  # RabbitMQ Message Broker
   rabbitmq:
-    image: rabbitmq:3-management
-    container_name: rabbitmq
+    image: rabbitmq:3.13-management
+    container_name: logscope-rabbitmq
+    restart: unless-stopped
     ports:
       - "5672:5672"
       - "15672:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_USER: logscope
+      RABBITMQ_DEFAULT_PASS: logscope123
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - logscope-network
 
+  # LogScope API
   api:
     build:
-      context: .
+      context: ./logscopeapi
+      dockerfile: Dockerfile
     container_name: logscope-api
+    restart: unless-stopped
     ports:
       - "8080:8080"
     depends_on:
@@ -47,12 +78,76 @@ services:
       - redis
       - rabbitmq
     environment:
-      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/logscope
+      # Database
+      SPRING_DATA_MONGODB_URI: mongodb://logscope:logscope123@mongodb:27017/logscope
+      
+      # Redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: redis123
+      
+      # RabbitMQ
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: logscope
+      RABBITMQ_PASSWORD: logscope123
+      
+      # JWT
+      JWT_SECRET: your-super-secret-jwt-key-change-this-in-production-logscope-2024
+      JWT_EXPIRATION: 86400000
+      
+      # LogScope Configuration
+      LOG_RETENTION_DAYS: 30
+      
+      # Email Configuration (configure with your SMTP settings)
+      ALERT_EMAIL_ENABLED: true
+      ALERT_EMAIL_FROM: noreply@logscope.com
+      ALERT_EMAIL_ADMIN: admin@logscope.com
+      MAIL_HOST: smtp.gmail.com
+      MAIL_PORT: 587
+      # MAIL_USERNAME: your-email@gmail.com
+      # MAIL_PASSWORD: your-app-password
+      
+      # Telegram Configuration (optional)
+      ALERT_TELEGRAM_ENABLED: false
+      # TELEGRAM_BOT_TOKEN: your-bot-token
+      # TELEGRAM_CHAT_ID: your-chat-id
+      
       SPRING_PROFILES_ACTIVE: docker
-      JWT_SECRET: 645ce38865e11b509c8fa7cd4c1856a8
+    networks:
+      - logscope-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
-# --- Definição dos volumes nomeados aqui, no mesmo nível de 'services' ---
+  # LogScope Frontend (optional)
+  frontend:
+    build:
+      context: ./logscope-frontend
+      dockerfile: Dockerfile
+    container_name: logscope-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    environment:
+      REACT_APP_API_URL: http://localhost:8080
+    networks:
+      - logscope-network
+
+# Volumes for persistent data
 volumes:
   mongo_data:
-  # Você pode adicionar opções aqui se precisar, como 'driver: local'
-  # mas para a maioria dos casos, apenas o nome já é suficiente.
+    driver: local
+  redis_data:
+    driver: local
+  rabbitmq_data:
+    driver: local
+
+# Network for service communication
+networks:
+  logscope-network:
+    driver: bridge

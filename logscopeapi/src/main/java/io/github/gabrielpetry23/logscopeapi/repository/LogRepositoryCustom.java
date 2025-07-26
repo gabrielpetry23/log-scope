@@ -7,5 +7,7 @@ import java.util.List;
 
 public interface LogRepositoryCustom {
     List<LogResponseDTO> findByUserIdWithFilters(String userId, String level, LocalDateTime start, LocalDateTime end, String messageContains);
+    List<LogResponseDTO> findByClientIdWithFilters(String clientId, String level, LocalDateTime start, LocalDateTime end, String messageContains);
+    List<LogResponseDTO> findByApplicationWithFilters(String clientId, String application, String level, LocalDateTime start, LocalDateTime end);
 }
 

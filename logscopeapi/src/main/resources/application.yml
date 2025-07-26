@@ -4,21 +4,74 @@ spring:
       uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/logscope}
 
   redis:
-    host: redis
-    port: 6379
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
 
   rabbitmq:
-    host: rabbitmq
-    port: 5672
-    username: guest
-    password: guest
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:gabriel.petry08@gmail.com}
+    password: ${MAIL_PASSWORD:itfw tzve lcfz ikvq}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+      adjust-dates-to-context-time-zone: false
+    time-zone: UTC
 
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
 
+# JWT Configuration
 jwt:
-  secret: 645ce38865e11b509c8fa7cd4c1856a8
-  expiration: 86400000
+  secret: ${JWT_SECRET:645ce38865e11b509c8fa7cd4c1856a8}
+  expiration: ${JWT_EXPIRATION:86400000}
+
+# LogScope specific configuration
+logscope:
+  log-retention-days: ${LOG_RETENTION_DAYS:30}
+  alert:
+    email:
+      enabled: ${ALERT_EMAIL_ENABLED:true}
+      from: ${ALERT_EMAIL_FROM:gabriel.petry08@gmail.com}
+      admin: ${ALERT_EMAIL_ADMIN:frosty.dzn23@gmail.com}
+    telegram:
+      enabled: ${ALERT_TELEGRAM_ENABLED:false}
+      bot-token: ${TELEGRAM_BOT_TOKEN:}
+      chat-id: ${TELEGRAM_CHAT_ID:}
+
+# Logging configuration
 logging:
   level:
-    org.springframework.security: DEBUG
+    root: INFO
+    io.github.gabrielpetry23.logscopeapi: DEBUG
+    org.springframework.security: WARN
+    org.springframework.data.mongodb: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Management endpoints for monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized

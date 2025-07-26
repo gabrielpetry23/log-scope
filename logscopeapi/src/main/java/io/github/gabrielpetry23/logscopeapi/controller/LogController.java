@@ -40,7 +40,6 @@ public class LogController {
             @RequestParam(required = false) String messageContains,
             Authentication authentication) {
 
-
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
         List<LogResponseDTO> logs = logService.getLogsForUserWithFilters(
@@ -51,7 +50,18 @@ public class LogController {
                 messageContains
         );
 
-        System.out.println("Logs encontrados: " + logs.size());
+        return ResponseEntity.ok(logs);
+    }
+
+    @GetMapping("/application/{application}")
+    @PreAuthorize("hasAnyRole('COMPANY_ADMIN', 'COMPANY_VIEWER', 'GLOBAL_ADMIN', 'GLOBAL_SUPPORT')")
+    public ResponseEntity<List<LogResponseDTO>> getLogsByApplication(
+            @PathVariable String application,
+            @RequestParam(required = false) String level,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
+
+        List<LogResponseDTO> logs = logService.getLogsByApplication(application, level, start, end);
         return ResponseEntity.ok(logs);
     }
 }

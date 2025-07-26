@@ -76,41 +76,4 @@ public class ClientService {
         clientRepository.save(client);
         return newSecret;
     }
-
-//    @PostConstruct
-//    public void init() {
-//        // Exemplo para Client 001
-//        String testClientId1 = "logscope-client-001";
-//        String initialSecret1 = "test-secret-001";
-//        if (clientRepository.findByClientId(testClientId1).isEmpty()) {
-//            Client client1 = new Client(); // Cria nova instância
-//            client1.setClientId(testClientId1); // Define o clientId fixo
-//            client1.setCompanyName("Acme Corp");
-//            client1.setContactEmail("contact@acme.com");
-//            client1.setClientSecretHash(passwordEncoder.encode(initialSecret1)); // Hashea a senha
-//            client1.setRoles(Set.of(Role.COMPANY_SYSTEM)); // Exemplo de role mais adequada para client_credentials
-//            client1.setEnabled(true);
-//            client1.setCreatedAt(Instant.now());
-//            client1.setLastModifiedAt(Instant.now());
-//            clientRepository.save(client1);
-//            System.out.println("Test Client 'Acme Corp' created with Client ID: " + testClientId1 + " and Secret: " + initialSecret1);
-//        }
-//
-//        // Repetir para logscope-client-002 de forma similar
-//        String testClientId2 = "logscope-client-002";
-//        String initialSecret2 = "test-secret-002";
-//        if (clientRepository.findByClientId(testClientId2).isEmpty()) {
-//            Client client2 = new Client();
-//            client2.setClientId(testClientId2);
-//            client2.setCompanyName("Globex Inc");
-//            client2.setContactEmail("support@globex.com");
-//            client2.setClientSecretHash(passwordEncoder.encode(initialSecret2));
-//            client2.setRoles(Set.of(Role.COMPANY_SYSTEM));
-//            client2.setEnabled(true);
-//            client2.setCreatedAt(Instant.now());
-//            client2.setLastModifiedAt(Instant.now());
-//            clientRepository.save(client2);
-//            System.out.println("Test Client 'Globex Inc' created with Client ID: " + testClientId2 + " and Secret: " + initialSecret2);
-//        }
-//    }
 }
